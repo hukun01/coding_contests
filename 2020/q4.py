@@ -19,6 +19,12 @@ def reverse(s):
 def both(s):
     return flip(reverse(s))
 
+def getRandomIndexPair(candidates, b):
+    i1 = random.sample(candidates, 1)[0] if len(candidates) > 0 else 1
+    candidates.remove(i1)
+    i2 = b + 1 - i1
+    return i1, i2
+
 def solve(b):
     '''
     First, some terminologies:
@@ -28,21 +34,20 @@ def solve(b):
     'both': array got both reversed and complemented.
 
     Keep track of all indicies we need to query about.
+    
     Build a (partial) array 'ans' to store all the latest values.
+    
     In every round, we randomly pick half indicies for query, the
     other halves are symmetric. The reason behind this is that these
     value pairs would help us know what have happened in the last
     quantum fluctuation, **deterministically**. See method 'update()'
     for more details on how these pairs are used.
+
+    Once we know what operation happened on the array in DB, we can apply the
+    same operation to the array in our hands to keep data in sync.
     '''
     ROUND = 10
     MAX_QUERIES_COUNT = 150
-    def getRandomIndex(candidates):
-        if not candidates:
-            return 1
-        idx = random.sample(candidates, 1)[0]
-        candidates.remove(idx)
-        return idx
     sames = [] # the index pairs at which the values are the same
     diffs = [] # the index pairs at which the values are different
     indicies = set(range(1, b // 2 + 1))
@@ -51,9 +56,8 @@ def solve(b):
     for limit in range(ROUND, MAX_QUERIES_COUNT, ROUND):
         while queryCount + 2 <= limit and indicies:
             queryCount += 2
-            i1 = getRandomIndex(indicies)
+            i1, i2 = getRandomIndexPair(indicies, b)
             ans[i1-1] = interact(str(i1))
-            i2 = b + 1 - i1
             ans[i2-1] = interact(str(i2))
             if ans[i1-1] == ans[i2-1]:
                 sames.append((i1, i2))
@@ -62,17 +66,13 @@ def solve(b):
         if not indicies:
             break
 
-        ans, updateQueryCount = update(ans, diffs, sames)
-        if updateQueryCount == 1:
-            #i1 = getRandomIndex(indicies)
-            #ans[i1-1] = interact(str(i1))
-            _ = interact('1')
+        ans = update(ans, diffs, sames)
         queryCount += 2
     return interact(''.join(ans))
 
 def update(ans, diffs, sames):
     '''
-    Determine the transformation: any of [same, flip, reverse, both].
+    Determine the transformation operation: any of [same, flip, reverse, both].
     Update 'ans' based on the above operation.
     '''
     if len(diffs) == 0 or len(sames) == 0:
@@ -91,31 +91,43 @@ def update(ans, diffs, sames):
         v1New = interact(str(i1))
         if v1Old != v1New:
             ans = flip(ans)
-        return (ans, 1)
+        # Now we have incremented the query by 1, and we intentionally waste this query
+        # below to keep the query pace consistent.
+        # Note that now we don't want to retrieve any index pair from the total indicies,
+        # because that would make the query count incremented by 3.
+        _ = interact(str(i1))
     else:
+        '''
+        Check an index from a diff pair and a same pair, respectively.
+        In the diff pair: 
+        1. If the value remains the same, the operation was either 'both' or 'same'.
+        Now check the same pair:
+            a. If the value remains the same, the operation was 'same';
+            b. Otherwise, the operation was 'both'.
+        2. otherwise operation was 'flip' or 'reverse'.
+        Now check the same pair:
+            a. If the value remains the same, the operation was 'reverse';
+            b. Otherwise, the operation was 'flip'.
+        '''
         i1, _ = random.choice(diffs)
         v1Old = ans[i1-1]
         v1New = interact(str(i1))
         bothOrSame = v1Old == v1New
-        i1, _ = random.choice(sames)
-        v1Old = ans[i1-1]
-        v1New = interact(str(i1))
+        i2, _ = random.choice(sames)
+        v2Old = ans[i2-1]
+        v2New = interact(str(i2))
         if bothOrSame:
-            if v1Old == v1New:
-                # same
+            if v2Old == v2New:
                 pass
             else:
-                # both
                 ans = both(ans)
         else:
             # either flipped or reversed
-            if v1Old == v1New:
-                # reversed
+            if v2Old == v2New:
                 ans = reverse(ans)
             else:
-                # flipped
                 ans = flip(ans)
-        return (ans, 2)
+    return ans
 
 t, b = getInput()
 for i in range(1, t + 1):
