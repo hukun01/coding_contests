@@ -1,5 +1,9 @@
 import random
 
+'''
+**Don't read this, it can't pass the big test set.
+'''
+
 def getInput():
     return [int(c) for c in input().split(" ")]
 
