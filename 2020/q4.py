@@ -48,15 +48,20 @@ def solve(b):
     '''
     ROUND = 10
     MAX_QUERIES_COUNT = 150
+
     sames = [] # the index pairs at which the values are the same
     diffs = [] # the index pairs at which the values are different
-    indicies = set(range(1, b // 2 + 1))
-    queryCount = 0
     ans = [''] * b
+
+    indicies = list(range(1, b // 2 + 1))
+    random.shuffle(indicies)
+
+    queryCount = 0
     for limit in range(ROUND, MAX_QUERIES_COUNT, ROUND):
         while queryCount + 2 <= limit and indicies:
             queryCount += 2
-            i1, i2 = getRandomIndexPair(indicies, b)
+            i1 = indicies.pop()
+            i2 = b + 1 - i1
             ans[i1-1] = interact(str(i1))
             ans[i2-1] = interact(str(i2))
             if ans[i1-1] == ans[i2-1]:
