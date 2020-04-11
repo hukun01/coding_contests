@@ -1,6 +1,6 @@
 import random
-R = 100
-C = 1000
+R = 300
+C = 300
 T = 10
 print(T)
 for _ in range(T):
