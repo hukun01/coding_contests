@@ -5,6 +5,16 @@ rrm = lambda: list(map(int, rr().split()))
 '''
 Use `python3.7 -m cProfile ./q3.py < q3_input2.txt` to see what's taking the most time.
 
+The key in this problem is to only check for neighbor updates for the persons that are being
+eliminated in the last round. Such that there are at most 4 updates to do for each person,
+and there is at most R*C persons to eliminate, so the total time can be O(R*C).
+
+Some implementation details are also critical to pass the test set 2 or to make logic concise,
+such as:
+1. avoid collections.defaultdict(), it's slower than dict() or list().
+2. use list comprehension as much as possible.
+3. when dealing with directions, let 0 be up, 1 be down, then d^1 is the opposite direction of d,
+same applies to left(3) and right(4).
 '''
 def solve(R, C, A):
     neighbors = [[[(-1, -1)] * 4 for c in range(C)] for r in range(R)]
@@ -14,12 +24,13 @@ def solve(R, C, A):
     def check(r, c):
         return 0 <= r < R and 0 <= c < C
 
-    for r in range(R):
-        for c in range(C):
-            for i, (dr, dc) in enumerate(dirs):
+    for r in range(0, R, 2):
+        for c in range(0, C, 2):
+            for d, (dr, dc) in enumerate(dirs):
                 nr, nc = r + dr, c + dc
                 if check(nr, nc):
-                    neighbors[r][c][i] = (nr, nc)
+                    neighbors[r][c][d] = (nr, nc)
+                    neighbors[nr][nc][d^1] = (r, c)
 
     def shouldEliminate(r, c):
         total = 0
