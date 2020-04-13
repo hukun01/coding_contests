@@ -18,35 +18,34 @@ We will have to take extra 1s when seeing 0 at the bits, so we can first try to
 construct N - 30, and keep going down one side of the triangle afterwards to collect
 the rest using 1s.
 '''
-def solve(n):
-    def output(a, b):
-        print("{} {}".format(a, b))
+def output(a, b):
+    print("{} {}".format(a, b))
 
-    rows = min(30, n)
-    n -= rows
-    a = [0] * rows
-    for r in range(rows-1, -1, -1):
-        if n >= (1 << r) - 1:
-            a[r] = 1
-            n -= (1 << r) - 1
-    rows += n
-    for _ in range(rows - len(a)):
-        a.append(0)
-    side = 0
-    for r in range(rows):
-        if a[r] == 1:
-            if side == 0:
-                for j in range(r + 1):
-                    output(r + 1, j + 1)
+def solve(n):
+    edges = 30
+    if n <= edges:
+        for i in range(n):
+            output(i + 1, 1)
+        return
+    n -= edges
+    atRight = True
+    i = 0
+    while edges:
+        if (n >> i) & 1:
+            if atRight:
+                for j in range(i + 1, 0, -1):
+                    output(i + 1, j)
             else:
-                for j in range(r, -1, -1):
-                    output(r + 1, j + 1)
-            side ^= 1
+                for j in range(1, i+2):
+                    output(i + 1, j)
+            atRight = not atRight
         else:
-            if side == 0:
-                output(r + 1, 1)
+            edges -= 1
+            if atRight:
+                output(i + 1, i + 1)
             else:
-                output(r + 1, r + 1)
+                output(i + 1, 1)
+        i += 1
 
 t = int(input())
 for i in range(1, t + 1):
