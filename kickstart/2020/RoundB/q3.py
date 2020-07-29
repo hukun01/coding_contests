@@ -22,9 +22,7 @@ def solve():
                 if s[i] in 'EW':
                     stack[-1][2] += 1 if s[i] == 'E' else -1
         i += 1
-    count, south, east = stack.pop()
-    south *= count
-    east *= count
+    _, south, east = stack.pop()
     boundary = 10 ** 9
     south = south % boundary
     if south < 0:
