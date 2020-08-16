@@ -43,12 +43,6 @@ def solve(N, K, W, L, Al, Bl, Cl, Dl, H, Aw, Bw, Cw, Dw, Ah, Bh, Ch, Dh):
             right = used_ws.bisect_right([interval[1] + 1])
             if right > 0 and used_ws[right-1][0] > interval[1]:
                 right -= 1
-            '''
-            if left - 1 >= 0 and used_ws[left-1][1] >= interval[0]:
-                left -= 1
-            elif right < len(used_ws) and used_ws[right][0] <= interval[1]:
-                right += 1
-            '''
             if DEBUG: print(f"left {left}, right {right}")
             intersected = right - left
         curr_P = last_P
