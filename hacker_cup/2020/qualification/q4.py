@@ -11,7 +11,7 @@ class MinQueue:
         self.size = size
 
     def push(self, x, pos):
-        while self.queue and self.queue[-1][0] > x:
+        while self.queue and self.queue[-1][0] >= x:
             self.queue.pop()
         self.queue.append([x, pos])
 
@@ -30,7 +30,7 @@ def solve(n, m, costs):
     Let F_i be the min cost to arrive at city i with full tank.
     Let G_i be the min cost to arrive at city i.
     Then we have below:
-    F_i = G_i = 0
+    F_1 = G_1 = 0
     G_i = min(F_j for j in [i - m, i))
     F_i = G_i + C_i
 

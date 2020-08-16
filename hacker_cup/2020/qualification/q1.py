@@ -1,5 +1,3 @@
-import os
-
 rr = input
 rri = lambda: int(rr())
 rrm = lambda: map(int, rr().split(' '))
@@ -25,7 +23,7 @@ def solve(N):
                 if ans[r][k] == ans[k][c] == 'Y':
                     ans[r][c] = 'Y'
 
-    return os.linesep + os.linesep.join([''.join(c for c in row) for row in ans])
+    return '\n' + '\n'.join([''.join(c for c in row) for row in ans])
 
 for i in range(1, rri() + 1):
     N = rri()
