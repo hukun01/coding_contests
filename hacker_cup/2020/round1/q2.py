@@ -1,5 +1,5 @@
-from collections import deque
 from functools import lru_cache
+from sortedcontainers import SortedList
 
 rr = input
 rri = lambda: int(rr())
@@ -8,7 +8,6 @@ rrm = lambda: map(int, rr().split(' '))
 MOD = 10 ** 9 + 7
 
 def solve(N, K, W, L, Al, Bl, Cl, Dl, H, Aw, Bw, Cw, Dw, Ah, Bh, Ch, Dh):
-    print(f"L {L}, H {H}, W {W}")
     # i starts from 0
     @lru_cache(maxsize=5)
     def get_L(i):
@@ -26,37 +25,49 @@ def solve(N, K, W, L, Al, Bl, Cl, Dl, H, Aw, Bw, Cw, Dw, Ah, Bh, Ch, Dh):
             return H[i]
         return (Ah * get_H(i-2) + Bh * get_H(i-1) + Ch) % Dh + 1
 
-    last_P = None
     ans = 1
-    heights = deque()
+    used_ws = SortedList()
+    last_P = 0
+    DEBUG = 1 # expect 310049399
     for i in range(N):
         h = get_H(i)
         l = get_L(i)
         w = get_W(i)
-        print(f"i {i} h {h} l {l}")
-        if i == 0:
-            curr_P = h * 2 + w * 2
+        if DEBUG: print(f"i {i} h {h} l {l} w{w}")
+        intersected = 0
+        interval = [l, l + w]
+        if used_ws:
+            left = used_ws.bisect_left([interval[0]])
+            right = used_ws.bisect_right([interval[1]])
+            if left - 1 >= 0 and used_ws[left-1][1] >= interval[0]:
+                left -= 1
+            elif right < len(used_ws) and used_ws[right][0] <= interval[1]:
+                right += 1
+            if DEBUG: print(f"left {left}, right {right}")
+            intersected = right - left
+        curr_P = last_P
+        if intersected:
+            middle = sum(2 * (i2[0] - i1[1]) for i1, i2 in 
+                zip(used_ws[left:right], used_ws[left:right][1:]))
+            curr_P += middle
+            #if DEBUG: print(f"middle {middle}")
+            #if DEBUG: print(f"minus h {2 * (intersected - 1) * h}")
+            #if DEBUG: print(f"add left side {max(0, used_ws[left][0] - interval[0]) * 2}")
+            #if DEBUG: print(f"add right side {max(0, interval[1] - used_ws[right-1][1]) * 2}")
+            curr_P += max(0, used_ws[left][0] - interval[0]) * 2
+            curr_P += max(0, interval[1] - used_ws[right-1][1]) * 2
+            curr_P -= 2 * (intersected - 1) * h
+            to_add = [min(used_ws[left][0], interval[0]), max(used_ws[right-1][1], interval[1])]
+            del used_ws[left:right]
+            used_ws.add(to_add)
         else:
-            while heights and heights[0][1] < l:
-                heights.popleft()
-            curr_P = last_P
-            w_delta = l - get_L(i-1) - w
-            #print(f"w_delta {w_delta}")
-            if w_delta <= 0:
-                cur_max_h = max([x[0] for x in heights if x[1] >= l], default=h)
-                #print(f"adding w {2 * (l - get_L(i-1))}")
-                curr_P += 2 * (l - get_L(i-1))
-                
-                if h > cur_max_h:
-                    #print(f"adding h {2 * (h - cur_max_h)}")
-                    curr_P += 2 * (h - cur_max_h)
-                    cur_max_h = h
-            else:
-                curr_P += 2 * h + w * 2
-        heights.append((h, l + w))
-        print(f"curr_P {curr_P}")
+            curr_P += w * 2 + h * 2
+            used_ws.add(interval)
+        if DEBUG: print(f"intersected {intersected}")
+        if DEBUG: print(f"used_ws {used_ws}")
+        if DEBUG: print(f"curr_P {curr_P}")
         ans = ans * curr_P % MOD
-        last_P = curr_P
+        last_P = curr_P % MOD
         
     return ans
 
