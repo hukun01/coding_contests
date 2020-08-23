@@ -36,20 +36,19 @@ def solve(N, K, W, L, Al, Bl, Cl, Dl, H, Aw, Bw, Cw, Dw, Ah, Bh, Ch, Dh):
         if DEBUG: print(f"i {i} h {h} l {l} w{w}")
         intersected = 0
         interval = [l, l + w]
+        curr_P = last_P
         if used_ws:
             left = used_ws.bisect_right([interval[0]])
             if left > 0 and used_ws[left-1][1] >= interval[0]:
                 left -= 1
-            right = used_ws.bisect_right([interval[1] + 1])
-            if right > 0 and used_ws[right-1][0] > interval[1]:
-                right -= 1
+            right = left
+            while right < len(used_ws) and used_ws[right][0] <= interval[1]:
+                if right > left:
+                    curr_P += 2 * (used_ws[right][0] - used_ws[right-1][1])
+                right += 1
             if DEBUG: print(f"left {left}, right {right}")
             intersected = right - left
-        curr_P = last_P
         if intersected:
-            middle = sum(2 * (i2[0] - i1[1]) for i1, i2 in 
-                zip(used_ws[left:right], used_ws[left:right][1:]))
-            curr_P += middle
             #if DEBUG: print(f"middle {middle}")
             #if DEBUG: print(f"minus h {2 * (intersected - 1) * h}")
             #if DEBUG: print(f"add left side {max(0, used_ws[left][0] - interval[0]) * 2}")
@@ -57,15 +56,15 @@ def solve(N, K, W, L, Al, Bl, Cl, Dl, H, Aw, Bw, Cw, Dw, Ah, Bh, Ch, Dh):
             curr_P += max(0, used_ws[left][0] - interval[0]) * 2
             curr_P += max(0, interval[1] - used_ws[right-1][1]) * 2
             curr_P -= 2 * (intersected - 1) * h
-            to_add = [min(used_ws[left][0], interval[0]), max(used_ws[right-1][1], interval[1])]
+            merged = [min(used_ws[left][0], interval[0]), max(used_ws[right-1][1], interval[1])]
             del used_ws[left:right]
-            used_ws.add(to_add)
+            used_ws.add(merged)
         else:
             curr_P += w * 2 + h * 2
             used_ws.add(interval)
-        if DEBUG: print(f"intersected {intersected}")
+        #if DEBUG: print(f"intersected {intersected}")
         if DEBUG: print(f"used_ws {used_ws}")
-        if DEBUG: print(f"curr_P {curr_P}")
+        #if DEBUG: print(f"curr_P {curr_P}")
         ans = ans * curr_P % MOD
         last_P = curr_P % MOD
         
